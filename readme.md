@@ -1,12 +1,12 @@
-To do app in go lang with several features
-- authentication based on username and password
+To do app in Golang with several basic features
+- authentication based on username and password. The authentication uses salting and hashing. Implementation uses bcrypt library.
 - session based authentication with postgress DB. Supports distributed architecture.
-- basic crud operations
+- users can create a to do list and manage it.
 
 
 
 
-steps
+steps to run this app locally.
 
 0. run the go server with `go run main.go`
 
@@ -32,3 +32,8 @@ curl --location 'http://localhost:8080/todos' \
 --header 'Content-Type: application/json'
 
 
+Future enhancements:
+- Write end to end REST API testing. 
+- Add docker container
+- Deploy multiple instances and add gateway for rate limitting
+- Simulate many users requesting at the same time using some tool
