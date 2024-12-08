@@ -4,18 +4,18 @@ import (
 	"encoding/json"
 	"net/http"
 	"todo-list/models"
+	"todo-list/services"
 
-	"github.com/alexedwards/scs/v2"
 	"github.com/go-chi/chi/v5"
-	"gorm.io/gorm"
 )
 
 // GetTodos retrieves all todos for the authenticated user
-func GetTodos(db *gorm.DB, sessionManager *scs.SessionManager) http.HandlerFunc {
+func GetTodos(service *services.TodoService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
-		var todos []models.Todo
-		if err := db.Find(&todos).Error; err != nil {
+		todos, err := service.GetTodoList()
+
+		if err != nil {
 			http.Error(w, "Failed to fetch todos", http.StatusInternalServerError)
 			return
 		}
@@ -26,7 +26,7 @@ func GetTodos(db *gorm.DB, sessionManager *scs.SessionManager) http.HandlerFunc 
 }
 
 // CreateTodo adds a new todo
-func CreateTodo(db *gorm.DB) http.HandlerFunc {
+func CreateTodo(service *services.TodoService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var todo models.Todo
 		if err := json.NewDecoder(r.Body).Decode(&todo); err != nil {
@@ -34,7 +34,7 @@ func CreateTodo(db *gorm.DB) http.HandlerFunc {
 			return
 		}
 
-		if err := db.Create(&todo).Error; err != nil {
+		if err := service.AddTodo(&todo); err != nil {
 			http.Error(w, "Failed to create todo", http.StatusInternalServerError)
 			return
 		}
@@ -45,12 +45,12 @@ func CreateTodo(db *gorm.DB) http.HandlerFunc {
 }
 
 // UpdateTodo updates an existing todo
-func UpdateTodo(db *gorm.DB) http.HandlerFunc {
+func UpdateTodo(service *services.TodoService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id := chi.URLParam(r, "id")
 
-		var todo models.Todo
-		if err := db.First(&todo, id).Error; err != nil {
+		todo, err := service.GetTodo(id)
+		if err != nil {
 			http.Error(w, "Todo not found", http.StatusNotFound)
 			return
 		}
@@ -60,7 +60,7 @@ func UpdateTodo(db *gorm.DB) http.HandlerFunc {
 			return
 		}
 
-		if err := db.Save(&todo).Error; err != nil {
+		if err := service.EditTodo(&todo); err != nil {
 			http.Error(w, "Failed to update todo", http.StatusInternalServerError)
 			return
 		}
@@ -71,11 +71,11 @@ func UpdateTodo(db *gorm.DB) http.HandlerFunc {
 }
 
 // DeleteTodo removes a todo
-func DeleteTodo(db *gorm.DB) http.HandlerFunc {
+func DeleteTodo(service *services.TodoService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id := chi.URLParam(r, "id")
 
-		if err := db.Delete(&models.Todo{}, id).Error; err != nil {
+		if err := service.RemoveTodo(id); err != nil {
 			http.Error(w, "Failed to delete todo", http.StatusInternalServerError)
 			return
 		}

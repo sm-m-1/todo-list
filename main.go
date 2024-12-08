@@ -7,6 +7,8 @@ import (
 	"time"
 	"todo-list/database"
 	"todo-list/handlers"
+	"todo-list/repositories"
+	"todo-list/services"
 
 	"github.com/alexedwards/scs/v2"
 	"github.com/go-chi/chi/v5"
@@ -17,6 +19,9 @@ func main() {
 	// Initialize database
 	db := database.InitDB()
 	defer database.CloseDB(db)
+
+	todoRepo := repositories.NewTodoRepository(db)
+	todoService := services.NewTodoService(todoRepo)
 
 	// Initialize session manager
 	sessionManager := scs.New()
@@ -32,10 +37,10 @@ func main() {
 	r.Post("/register", handlers.Register(db))
 	r.Post("/login", handlers.Login(db, sessionManager))
 	r.Post("/logout", handlers.Logout(sessionManager))
-	r.Get("/todos", AuthMiddleware(handlers.GetTodos(db, sessionManager), sessionManager))
-	r.Post("/todos", AuthMiddleware(handlers.CreateTodo(db), sessionManager))
-	r.Put("/todos/{id}", AuthMiddleware(handlers.UpdateTodo(db), sessionManager))
-	r.Delete("/todos/{id}", AuthMiddleware(handlers.DeleteTodo(db), sessionManager))
+	r.Get("/todos", AuthMiddleware(handlers.GetTodos(todoService), sessionManager))
+	r.Post("/todos", AuthMiddleware(handlers.CreateTodo(todoService), sessionManager))
+	r.Put("/todos/{id}", AuthMiddleware(handlers.UpdateTodo(todoService), sessionManager))
+	r.Delete("/todos/{id}", AuthMiddleware(handlers.DeleteTodo(todoService), sessionManager))
 
 	// Start the server
 	log.Println("Server is running on http://localhost:8080")

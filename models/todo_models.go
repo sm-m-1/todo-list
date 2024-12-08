@@ -5,6 +5,7 @@ import (
 )
 
 // Todo struct for the To-Do item, using GORM's model struct
+// gorm.Model definition
 type Todo struct {
 	ID          uint   `json:"id" gorm:"primaryKey"`
 	Title       string `json:"title" gorm:"not null"`
@@ -15,6 +16,7 @@ type Todo struct {
 }
 
 // User represents a user in the system
+// gorm.Model definition
 type User struct {
 	ID        uint   `gorm:"primaryKey"`
 	Username  string `gorm:"unique;not null"`
@@ -24,6 +26,7 @@ type User struct {
 }
 
 // Session represents a session in the database for session storage
+// gorm.Model definition
 type Session struct {
 	Token   string    `gorm:"primaryKey;size:255"` // Session token
 	Data    []byte    `gorm:"not null"`            // Encoded session data
