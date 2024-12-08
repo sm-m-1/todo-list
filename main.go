@@ -35,6 +35,7 @@ func main() {
 
 	// Routes
 	r.Post("/register", handlers.Register(db))
+	r.Get("/home", handlers.Home())
 	r.Post("/login", handlers.Login(db, sessionManager))
 	r.Post("/logout", handlers.Logout(sessionManager))
 	r.Get("/todos", AuthMiddleware(handlers.GetTodos(todoService), sessionManager))
@@ -44,7 +45,8 @@ func main() {
 
 	// Start the server
 	log.Println("Server is running on http://localhost:8080")
-	log.Fatal(http.ListenAndServe(":8080", sessionManager.LoadAndSave(r)))
+	// log.Fatal(http.ListenAndServe(":8080", sessionManager.LoadAndSave(r)))
+	log.Fatal(http.ListenAndServe(":8080", r))
 }
 
 // AuthMiddleware ensures the user is authenticated

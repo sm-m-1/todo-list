@@ -33,8 +33,8 @@ func InitDB() *gorm.DB {
 
 	// Run migrations
 	err = db.AutoMigrate(
-		&models.Todo{},
 		&models.User{},
+		&models.Todo{},
 		&models.Session{},
 	)
 

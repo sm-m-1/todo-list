@@ -50,6 +50,13 @@ func Register(db *gorm.DB) http.HandlerFunc {
 	}
 }
 
+func Home() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// fmt.Fprintln(w, "Home page of the server!")
+		w.Write([]byte("Home page of the server"))
+	}
+}
+
 // Login authenticates a user and starts a session
 func Login(db *gorm.DB, sessionManager *scs.SessionManager) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -87,6 +94,8 @@ func Login(db *gorm.DB, sessionManager *scs.SessionManager) http.HandlerFunc {
 func Logout(sessionManager *scs.SessionManager) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		err := sessionManager.Destroy(r.Context())
+		session := sessionManager.GetString(r.Context(), "userID")
+		fmt.Println("session value from db after Logout and sessionManager.Destroy:::: ", session)
 		if err != nil {
 			http.Error(w, "Failed to log out", http.StatusInternalServerError)
 			return
