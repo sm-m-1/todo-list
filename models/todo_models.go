@@ -11,6 +11,7 @@ type Todo struct {
 	Title       string `json:"title" gorm:"not null"`
 	Description string `json:"description"`
 	IsCompleted bool   `json:"is_completed"`
+	UserID      uint   `json:"user_id" gorm:"not null"` // Foreign key to associate with User
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
 }
@@ -23,6 +24,7 @@ type User struct {
 	Password  string `gorm:"not null"` // Hashed password
 	CreatedAt time.Time
 	UpdatedAt time.Time
+	Todos     []Todo `json:"todos" gorm:"foreignKey:UserID"` // One-to-many relationship
 }
 
 // Session represents a session in the database for session storage
