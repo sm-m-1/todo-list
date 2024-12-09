@@ -86,10 +86,11 @@ func Login(db *gorm.DB, sessionManager *scs.SessionManager) http.HandlerFunc {
 		// Start session
 		sessionManager.Put(r.Context(), "username", user.Username)
 		sessionManager.Put(r.Context(), "userID", user.ID)
-		sessionUsername := sessionManager.GetString(r.Context(), "username")
-		sessionUserID := sessionManager.Get(r.Context(), "userID")
-		fmt.Println("sessionUsername value from db after login:::: ", sessionUsername)
-		fmt.Println("sessionUserID value from db after login:::: ", sessionUserID)
+
+		// sessionUsername := sessionManager.GetString(r.Context(), "username")
+		// sessionUserID := sessionManager.Get(r.Context(), "userID")
+		// fmt.Println("sessionUsername value from db after login:::: ", sessionUsername)
+		// fmt.Println("sessionUserID value from db after login:::: ", sessionUserID)
 		w.WriteHeader(http.StatusOK)
 		fmt.Fprintln(w, "Login successful!")
 	}
@@ -99,8 +100,8 @@ func Login(db *gorm.DB, sessionManager *scs.SessionManager) http.HandlerFunc {
 func Logout(sessionManager *scs.SessionManager) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		err := sessionManager.Destroy(r.Context())
-		session := sessionManager.GetString(r.Context(), "username")
-		fmt.Println("session value from db after Logout and sessionManager.Destroy: ", session)
+		// session := sessionManager.GetString(r.Context(), "username")
+		// fmt.Println("session value from db after Logout and sessionManager.Destroy: ", session)
 		if err != nil {
 			http.Error(w, "Failed to log out", http.StatusInternalServerError)
 			return
