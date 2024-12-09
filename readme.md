@@ -37,3 +37,10 @@ Future enhancements:
 - Add docker container
 - Deploy multiple instances and add gateway for rate limitting
 - Simulate many users requesting at the same time using some tool
+
+
+test users:
+
+{"username": "user1", "password": "p1"}
+
+{"username": "user0", "password": "p0"}

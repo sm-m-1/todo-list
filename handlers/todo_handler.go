@@ -30,7 +30,7 @@ func GetTodos(service *services.TodoService) http.HandlerFunc {
 func CreateTodo(service *services.TodoService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		userID, ok := r.Context().Value("userID").(uint)
-		fmt.Println("context userID in CreateTodo:::: ", userID, ok)
+		// missing userID in the request context, which should exist from being set in SessionMiddleware
 		if !ok {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
@@ -67,6 +67,14 @@ func UpdateTodo(service *services.TodoService) http.HandlerFunc {
 			return
 		}
 
+		userID, ok := r.Context().Value("userID").(uint)
+		// missing userID in the request context, which should exist from being set in SessionMiddleware
+
+		if !ok || todo.UserID != userID {
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+
 		if err := json.NewDecoder(r.Body).Decode(&todo); err != nil {
 			http.Error(w, "Invalid input", http.StatusBadRequest)
 			return
@@ -86,6 +94,20 @@ func UpdateTodo(service *services.TodoService) http.HandlerFunc {
 func DeleteTodo(service *services.TodoService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id := chi.URLParam(r, "id")
+
+		todo, err := service.GetTodo(id)
+		if err != nil {
+			http.Error(w, "Todo not found", http.StatusNotFound)
+			return
+		}
+
+		userID, ok := r.Context().Value("userID").(uint)
+		// missing userID in the request context, which should exist from being set in SessionMiddleware
+
+		if !ok || todo.UserID != userID {
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
 
 		if err := service.RemoveTodo(id); err != nil {
 			http.Error(w, "Failed to delete todo", http.StatusInternalServerError)

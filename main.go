@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -59,19 +58,13 @@ func main() {
 // SessionMiddleware ensures the user is authenticated
 func SessionMiddleware(next http.HandlerFunc, sessionManager *scs.SessionManager) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-
-		userID, ok := r.Context().Value("userID").(uint)
-		fmt.Println("context userID in middleware:::: ", userID, ok)
-
 		sessionUsername := sessionManager.GetString(r.Context(), "username")
-		sessionUserID := sessionManager.Get(r.Context(), "userID")
-		fmt.Println("sessionUsername value from db after in middleware:::: ", sessionUsername)
-		fmt.Println("sessionUserID value from db after in middleware:::: ", sessionUserID)
-
 		if sessionUsername == "" {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
+		// set the userID in the request context so that it can be used to create TODO items.
+		sessionUserID := sessionManager.Get(r.Context(), "userID")
 		ctx := context.WithValue(r.Context(), "userID", sessionUserID)
 		next(w, r.WithContext(ctx))
 	}
