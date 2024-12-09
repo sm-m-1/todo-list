@@ -16,9 +16,9 @@ func NewTodoRepository(db *gorm.DB) *TodoRepository {
 }
 
 // Fetch all todos
-func (r *TodoRepository) GetAllTodos() ([]models.Todo, error) {
+func (r *TodoRepository) GetAllTodos(userId uint) ([]models.Todo, error) {
 	var todos []models.Todo
-	err := r.db.Find(&todos).Error
+	err := r.db.Where("user_id = ?", userId).Find(&todos).Error
 	return todos, err
 }
 

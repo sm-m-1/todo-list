@@ -15,8 +15,8 @@ func NewTodoService(repo *repositories.TodoRepository) *TodoService {
 	return &TodoService{repo}
 }
 
-func (s *TodoService) GetTodoList() ([]models.Todo, error) {
-	return s.repo.GetAllTodos()
+func (s *TodoService) GetTodoList(userId uint) ([]models.Todo, error) {
+	return s.repo.GetAllTodos(userId)
 }
 
 func (s *TodoService) AddTodo(todo *models.Todo) error {

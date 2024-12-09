@@ -13,8 +13,13 @@ import (
 // GetTodos retrieves all todos for the authenticated user
 func GetTodos(service *services.TodoService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-
-		todos, err := service.GetTodoList()
+		userID, ok := r.Context().Value("userID").(uint)
+		// missing userID in the request context, which should exist from being set in SessionMiddleware
+		if !ok {
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+		todos, err := service.GetTodoList(userID)
 
 		if err != nil {
 			http.Error(w, "Failed to fetch todos", http.StatusInternalServerError)
