@@ -94,7 +94,7 @@ func Login(db *gorm.DB, sessionManager *scs.SessionManager) http.HandlerFunc {
 func Logout(sessionManager *scs.SessionManager) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		err := sessionManager.Destroy(r.Context())
-		session := sessionManager.GetString(r.Context(), "userID")
+		session := sessionManager.Get(r.Context(), "userID")
 		fmt.Println("session value from db after Logout and sessionManager.Destroy:::: ", session)
 		if err != nil {
 			http.Error(w, "Failed to log out", http.StatusInternalServerError)
