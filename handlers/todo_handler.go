@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"todo-list/models"
 	"todo-list/services"
@@ -28,13 +29,24 @@ func GetTodos(service *services.TodoService) http.HandlerFunc {
 // CreateTodo adds a new todo
 func CreateTodo(service *services.TodoService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		userID, ok := r.Context().Value("userID").(uint)
+		fmt.Println("context userID in CreateTodo:::: ", userID, ok)
+		if !ok {
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+
 		var todo models.Todo
 		if err := json.NewDecoder(r.Body).Decode(&todo); err != nil {
 			http.Error(w, "Invalid input", http.StatusBadRequest)
 			return
 		}
 
+		// Associate todo with logged-in user
+		todo.UserID = userID
+
 		if err := service.AddTodo(&todo); err != nil {
+			fmt.Println("error when trying to add todo ", todo, err)
 			http.Error(w, "Failed to create todo", http.StatusInternalServerError)
 			return
 		}

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -25,7 +26,7 @@ func main() {
 
 	// Initialize session manager
 	sessionManager := scs.New()
-	sessionManager.Store = database.NewGORMStore(db, 24*time.Hour)
+	sessionManager.Store = repositories.NewGORMStore(db, 24*time.Hour)
 	sessionManager.Lifetime = 24 * time.Hour
 
 	sessionManager.Cookie.Name = "session_token"
@@ -59,13 +60,19 @@ func main() {
 func SessionMiddleware(next http.HandlerFunc, sessionManager *scs.SessionManager) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
-		session := sessionManager.GetString(r.Context(), "userID")
-		fmt.Println("session value from db after in middleware:::: ", session)
+		userID, ok := r.Context().Value("userID").(uint)
+		fmt.Println("context userID in middleware:::: ", userID, ok)
 
-		if session == "" {
+		sessionUsername := sessionManager.GetString(r.Context(), "username")
+		sessionUserID := sessionManager.Get(r.Context(), "userID")
+		fmt.Println("sessionUsername value from db after in middleware:::: ", sessionUsername)
+		fmt.Println("sessionUserID value from db after in middleware:::: ", sessionUserID)
+
+		if sessionUsername == "" {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
-		next(w, r)
+		ctx := context.WithValue(r.Context(), "userID", sessionUserID)
+		next(w, r.WithContext(ctx))
 	}
 }
