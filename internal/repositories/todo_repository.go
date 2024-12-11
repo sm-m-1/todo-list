@@ -1,7 +1,7 @@
 package repositories
 
 import (
-	"todo-list/models"
+	"todo-list/internal/models"
 
 	"gorm.io/gorm"
 )

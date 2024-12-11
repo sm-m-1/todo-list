@@ -3,7 +3,7 @@ package database
 import (
 	"fmt"
 	"log"
-	"todo-list/models"
+	"todo-list/internal/models"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"

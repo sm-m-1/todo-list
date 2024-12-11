@@ -1,8 +1,8 @@
 package services
 
 import (
-	"todo-list/models"
-	"todo-list/repositories"
+	"todo-list/internal/models"
+	"todo-list/internal/repositories"
 )
 
 type TodoService struct {

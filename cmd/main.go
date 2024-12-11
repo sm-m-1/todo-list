@@ -5,10 +5,10 @@ import (
 	"log"
 	"net/http"
 	"time"
-	"todo-list/database"
-	"todo-list/handlers"
-	"todo-list/repositories"
-	"todo-list/services"
+	"todo-list/internal/handlers"
+	"todo-list/internal/repositories"
+	"todo-list/internal/services"
+	"todo-list/pkg/database"
 
 	"github.com/alexedwards/scs/v2"
 	"github.com/go-chi/chi/v5"
@@ -25,7 +25,7 @@ func main() {
 
 	// Initialize session manager
 	sessionManager := scs.New()
-	sessionManager.Store = repositories.NewGORMStore(db, 24*time.Hour)
+	sessionManager.Store = database.NewGORMStore(db, 24*time.Hour)
 	sessionManager.Lifetime = 24 * time.Hour
 
 	sessionManager.Cookie.Name = "session_token"

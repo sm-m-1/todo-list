@@ -1,10 +1,10 @@
-package repositories
+package database
 
 import (
 	"errors"
 	"fmt"
 	"time"
-	"todo-list/models"
+	"todo-list/internal/models"
 
 	"gorm.io/gorm"
 )

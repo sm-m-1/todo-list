@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"todo-list/models"
-	"todo-list/services"
+	"todo-list/internal/models"
+	"todo-list/internal/services"
 
 	"github.com/go-chi/chi/v5"
 )

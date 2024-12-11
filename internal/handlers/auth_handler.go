@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"todo-list/models"
+	"todo-list/internal/models"
 
 	"github.com/alexedwards/scs/v2"
 	"golang.org/x/crypto/bcrypt"
