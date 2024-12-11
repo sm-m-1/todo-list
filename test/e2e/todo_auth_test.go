@@ -106,9 +106,8 @@ func TestTodoAppWithAuth(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusOK, logoutResp.StatusCode)
 
-	todoId := strconv.FormatInt(int64(createdTodo.ID), 10)
-
 	// Step 5: Test Unauthorized Access After Logout
+	todoId := strconv.FormatInt(int64(createdTodo.ID), 10)
 	getReq, _ := http.NewRequest("GET", server.URL+"/todos/"+todoId, nil)
 	getReq.AddCookie(authCookie) // Use the same session cookie
 
