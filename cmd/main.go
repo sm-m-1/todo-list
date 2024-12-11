@@ -51,6 +51,7 @@ func main() {
 	r.Post("/todos", config.SessionMiddleware(todoHandler.CreateTodo(), sessionManager))
 	r.Put("/todos/{id}", config.SessionMiddleware(todoHandler.UpdateTodo(), sessionManager))
 	r.Delete("/todos/{id}", config.SessionMiddleware(todoHandler.DeleteTodo(), sessionManager))
+	r.Get("/todos/{id}", config.SessionMiddleware(todoHandler.GetTodo(), sessionManager))
 
 	// Start the server
 	log.Println("Server is running on http://localhost:8080")

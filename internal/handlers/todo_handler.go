@@ -130,3 +130,20 @@ func (h *TodoHandler) DeleteTodo() http.HandlerFunc {
 		w.WriteHeader(http.StatusNoContent)
 	}
 }
+
+func (h *TodoHandler) GetTodo() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+
+		id := chi.URLParam(r, "id")
+
+		todo, err := h.service.GetTodo(id)
+		if err != nil {
+			http.Error(w, "Todo not found", http.StatusNotFound)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(todo)
+	}
+}

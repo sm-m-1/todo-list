@@ -3,8 +3,10 @@ package e2e
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"testing"
 	"time"
 	"todo-list/config"
@@ -87,11 +89,14 @@ func TestTodoAppWithAuth(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusCreated, createResp.StatusCode)
 
-	var createdTodo map[string]interface{}
+	var createdTodo models.Todo
 	json.NewDecoder(createResp.Body).Decode(&createdTodo)
 	createResp.Body.Close()
 
-	assert.Equal(t, "Test Todo", createdTodo["title"])
+	fmt.Println("createdTodo: ", createdTodo)
+	fmt.Println("")
+
+	assert.Equal(t, "Test Todo", createdTodo.Title)
 
 	// Step 4: Test Logout
 	logoutReq, _ := http.NewRequest("POST", server.URL+"/logout", nil)
@@ -101,8 +106,10 @@ func TestTodoAppWithAuth(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusOK, logoutResp.StatusCode)
 
+	todoId := strconv.FormatInt(int64(createdTodo.ID), 10)
+
 	// Step 5: Test Unauthorized Access After Logout
-	getReq, _ := http.NewRequest("GET", server.URL+"/todos/"+createdTodo["id"].(string), nil)
+	getReq, _ := http.NewRequest("GET", server.URL+"/todos/"+todoId, nil)
 	getReq.AddCookie(authCookie) // Use the same session cookie
 
 	getResp, err := client.Do(getReq)
@@ -151,7 +158,7 @@ func setupRouter(db *gorm.DB) http.Handler {
 		r.Post("/todos", config.SessionMiddleware(todoHandler.CreateTodo(), sessionManager))
 		r.Put("/todos/{id}", config.SessionMiddleware(todoHandler.UpdateTodo(), sessionManager))
 		r.Delete("/todos/{id}", config.SessionMiddleware(todoHandler.DeleteTodo(), sessionManager))
-		// r.Get("/todos/{id}", todoHandler.GetTodo())
+		r.Get("/todos/{id}", config.SessionMiddleware(todoHandler.GetTodo(), sessionManager))
 	})
 
 	return r
