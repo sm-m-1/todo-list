@@ -44,3 +44,6 @@ test users:
 {"username": "user1", "password": "p1"}
 
 {"username": "user0", "password": "p0"}
+
+
+run tests with `go test ./test/e2e -v`

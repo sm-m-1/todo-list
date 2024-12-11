@@ -7,8 +7,11 @@ import (
 	"net/http/httptest"
 	"testing"
 	"time"
+	"todo-list/config"
+	"todo-list/internal/handlers"
 	"todo-list/internal/models"
 	"todo-list/internal/repos"
+	"todo-list/internal/services"
 	"todo-list/pkg/database"
 
 	"github.com/alexedwards/scs/v2"
@@ -131,23 +134,24 @@ func setupRouter(db *gorm.DB) http.Handler {
 
 	// Initialize handlers
 	userRepo := repos.NewUserRepository(db)
-	userHandler := NewUserHandler(userRepo, sessionManager)
+	authHandler := handlers.NewAuthHandler(userRepo, sessionManager)
 
-	todoRepo := NewTodoRepository(db)
-	todoHandler := NewTodoHandler(todoRepo)
+	todoRepo := repos.NewTodoRepository(db)
+	todoService := services.NewTodoService(todoRepo)
+	todoHandler := handlers.NewTodoHandler(todoService)
 
 	// User routes
-	r.Post("/register", userHandler.Register)
-	r.Post("/login", userHandler.Login)
-	r.Post("/logout", userHandler.Logout)
+	r.Post("/register", authHandler.Register())
+	r.Post("/login", authHandler.Login())
+	r.Post("/logout", authHandler.Logout())
 
 	// Todo routes
 	r.Group(func(r chi.Router) {
-		r.Use(AuthMiddleware(sessionManager)) // Protect routes with auth middleware
-		r.Post("/todos", todoHandler.CreateTodo)
-		r.Get("/todos/{id}", todoHandler.GetTodo)
-		r.Put("/todos/{id}", todoHandler.UpdateTodo)
-		r.Delete("/todos/{id}", todoHandler.DeleteTodo)
+		// r.Use(config.SessionMiddleware(sessionManager)) // Protect routes with auth middleware
+		r.Post("/todos", config.SessionMiddleware(todoHandler.CreateTodo(), sessionManager))
+		r.Put("/todos/{id}", config.SessionMiddleware(todoHandler.UpdateTodo(), sessionManager))
+		r.Delete("/todos/{id}", config.SessionMiddleware(todoHandler.DeleteTodo(), sessionManager))
+		// r.Get("/todos/{id}", todoHandler.GetTodo())
 	})
 
 	return r
