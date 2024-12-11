@@ -6,18 +6,23 @@ import (
 	"log"
 	"net/http"
 	"todo-list/internal/models"
+	"todo-list/internal/repos"
 
 	"github.com/alexedwards/scs/v2"
 	"golang.org/x/crypto/bcrypt"
-	"gorm.io/gorm"
 )
 
-// Hash password using bcrypt helper
+type AuthHandler struct {
+	userRepo       *repos.UserRepository
+	sessionManager *scs.SessionManager
+}
 
-// Check password against hashed password helper
+func NewAuthHandler(userRepo *repos.UserRepository, sessionManager *scs.SessionManager) *AuthHandler {
+	return &AuthHandler{userRepo, sessionManager}
+}
 
 // Register creates a new user
-func Register(db *gorm.DB) http.HandlerFunc {
+func (h *AuthHandler) Register() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var user models.User
 		var creds struct {
@@ -39,7 +44,7 @@ func Register(db *gorm.DB) http.HandlerFunc {
 		user.Username = string(creds.Username)
 
 		// Save user to the database
-		if err := db.Create(&user).Error; err != nil {
+		if err := h.userRepo.CreateUser(&user); err != nil {
 			log.Println("Error:", err)
 			http.Error(w, "Failed to create user", http.StatusInternalServerError)
 			return
@@ -58,7 +63,7 @@ func Home() http.HandlerFunc {
 }
 
 // Login authenticates a user and starts a session
-func Login(db *gorm.DB, sessionManager *scs.SessionManager) http.HandlerFunc {
+func (h *AuthHandler) Login() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var creds struct {
 			Username string `json:"username"`
@@ -70,7 +75,7 @@ func Login(db *gorm.DB, sessionManager *scs.SessionManager) http.HandlerFunc {
 		}
 
 		var user models.User
-		if err := db.First(&user, "username = ?", creds.Username).Error; err != nil {
+		if err := h.userRepo.GetUser(creds.Username, &user); err != nil {
 			http.Error(w, "Invalid username or password", http.StatusUnauthorized)
 			return
 		}
@@ -84,8 +89,8 @@ func Login(db *gorm.DB, sessionManager *scs.SessionManager) http.HandlerFunc {
 		fmt.Println("actual user id in db is value from db after login:::: ", user.ID)
 
 		// Start session
-		sessionManager.Put(r.Context(), "username", user.Username)
-		sessionManager.Put(r.Context(), "userID", user.ID)
+		h.sessionManager.Put(r.Context(), "username", user.Username)
+		h.sessionManager.Put(r.Context(), "userID", user.ID)
 
 		// sessionUsername := sessionManager.GetString(r.Context(), "username")
 		// sessionUserID := sessionManager.Get(r.Context(), "userID")
@@ -97,9 +102,9 @@ func Login(db *gorm.DB, sessionManager *scs.SessionManager) http.HandlerFunc {
 }
 
 // Logout ends the user's session sessionManager *scs.SessionManager
-func Logout(sessionManager *scs.SessionManager) http.HandlerFunc {
+func (h *AuthHandler) Logout() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		err := sessionManager.Destroy(r.Context())
+		err := h.sessionManager.Destroy(r.Context())
 		// session := sessionManager.GetString(r.Context(), "username")
 		// fmt.Println("session value from db after Logout and sessionManager.Destroy: ", session)
 		if err != nil {

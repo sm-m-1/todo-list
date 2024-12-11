@@ -10,16 +10,8 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-type TodoHandler struct {
-	service *services.TodoService
-}
-
-func NewTodoHandler(service *services.TodoService) *TodoHandler {
-	return &TodoHandler{service}
-}
-
 // GetTodos retrieves all todos for the authenticated user
-func (h *TodoHandler) GetTodos() http.HandlerFunc {
+func GetTodos(service *services.TodoService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		userID, ok := r.Context().Value("userID").(uint)
 		// missing userID in the request context, which should exist from being set in SessionMiddleware
@@ -27,7 +19,7 @@ func (h *TodoHandler) GetTodos() http.HandlerFunc {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
-		todos, err := h.service.GetTodoList(userID)
+		todos, err := service.GetTodoList(userID)
 
 		if err != nil {
 			http.Error(w, "Failed to fetch todos", http.StatusInternalServerError)
@@ -40,7 +32,7 @@ func (h *TodoHandler) GetTodos() http.HandlerFunc {
 }
 
 // CreateTodo adds a new todo
-func (h *TodoHandler) CreateTodo() http.HandlerFunc {
+func CreateTodo(service *services.TodoService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		userID, ok := r.Context().Value("userID").(uint)
 		// missing userID in the request context, which should exist from being set in SessionMiddleware
@@ -58,7 +50,7 @@ func (h *TodoHandler) CreateTodo() http.HandlerFunc {
 		// Associate todo with logged-in user
 		todo.UserID = userID
 
-		if err := h.service.AddTodo(&todo); err != nil {
+		if err := service.AddTodo(&todo); err != nil {
 			fmt.Println("error when trying to add todo ", todo, err)
 			http.Error(w, "Failed to create todo", http.StatusInternalServerError)
 			return
@@ -70,11 +62,11 @@ func (h *TodoHandler) CreateTodo() http.HandlerFunc {
 }
 
 // UpdateTodo updates an existing todo
-func (h *TodoHandler) UpdateTodo() http.HandlerFunc {
+func UpdateTodo(service *services.TodoService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id := chi.URLParam(r, "id")
 
-		todo, err := h.service.GetTodo(id)
+		todo, err := service.GetTodo(id)
 		if err != nil {
 			http.Error(w, "Todo not found", http.StatusNotFound)
 			return
@@ -93,7 +85,7 @@ func (h *TodoHandler) UpdateTodo() http.HandlerFunc {
 			return
 		}
 
-		if err := h.service.EditTodo(&todo); err != nil {
+		if err := service.EditTodo(&todo); err != nil {
 			http.Error(w, "Failed to update todo", http.StatusInternalServerError)
 			return
 		}
@@ -104,11 +96,11 @@ func (h *TodoHandler) UpdateTodo() http.HandlerFunc {
 }
 
 // DeleteTodo removes a todo
-func (h *TodoHandler) DeleteTodo() http.HandlerFunc {
+func DeleteTodo(service *services.TodoService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id := chi.URLParam(r, "id")
 
-		todo, err := h.service.GetTodo(id)
+		todo, err := service.GetTodo(id)
 		if err != nil {
 			http.Error(w, "Todo not found", http.StatusNotFound)
 			return
@@ -122,7 +114,7 @@ func (h *TodoHandler) DeleteTodo() http.HandlerFunc {
 			return
 		}
 
-		if err := h.service.RemoveTodo(id); err != nil {
+		if err := service.RemoveTodo(id); err != nil {
 			http.Error(w, "Failed to delete todo", http.StatusInternalServerError)
 			return
 		}

@@ -8,6 +8,7 @@ import (
 	"testing"
 	"time"
 	"todo-list/internal/models"
+	"todo-list/internal/repos"
 	"todo-list/pkg/database"
 
 	"github.com/alexedwards/scs/v2"
@@ -129,7 +130,7 @@ func setupRouter(db *gorm.DB) http.Handler {
 	r.Use(sessionManager.LoadAndSave)
 
 	// Initialize handlers
-	userRepo := NewUserRepository(db)
+	userRepo := repos.NewUserRepository(db)
 	userHandler := NewUserHandler(userRepo, sessionManager)
 
 	todoRepo := NewTodoRepository(db)

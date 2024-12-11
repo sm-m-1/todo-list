@@ -2,16 +2,16 @@ package services
 
 import (
 	"todo-list/internal/models"
-	"todo-list/internal/repositories"
+	"todo-list/internal/repos"
 )
 
 type TodoService struct {
-	repo *repositories.TodoRepository
+	repo *repos.TodoRepository
 }
 
 // the constructor for TodoService
 
-func NewTodoService(repo *repositories.TodoRepository) *TodoService {
+func NewTodoService(repo *repos.TodoRepository) *TodoService {
 	return &TodoService{repo}
 }
 

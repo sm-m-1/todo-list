@@ -1,4 +1,4 @@
-package repositories
+package repos
 
 import (
 	"todo-list/internal/models"

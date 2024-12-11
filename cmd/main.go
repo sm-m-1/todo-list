@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"time"
 	"todo-list/internal/handlers"
-	"todo-list/internal/repositories"
+	"todo-list/internal/repos"
 	"todo-list/internal/services"
 	"todo-list/pkg/database"
 
@@ -20,9 +20,6 @@ func main() {
 	db := database.InitDB()
 	defer database.CloseDB(db)
 
-	todoRepo := repositories.NewTodoRepository(db)
-	todoService := services.NewTodoService(todoRepo)
-
 	// Initialize session manager
 	sessionManager := scs.New()
 	sessionManager.Store = database.NewGORMStore(db, 24*time.Hour)
@@ -33,6 +30,12 @@ func main() {
 	sessionManager.Cookie.Secure = false // Set to true in production for HTTPS
 	sessionManager.Cookie.SameSite = http.SameSiteLaxMode
 
+	todoRepo := repos.NewTodoRepository(db)
+	userRepo := repos.NewUserRepository(db)
+	todoService := services.NewTodoService(todoRepo)
+	todoHandler := handlers.NewTodoHandler(todoService)
+	authHandler := handlers.NewAuthHandler(userRepo, sessionManager)
+
 	// Set up router
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
@@ -40,14 +43,14 @@ func main() {
 	// r.Use(sessionManager.LoadAndSave)
 
 	// Routes
-	r.Post("/register", handlers.Register(db))
+	r.Post("/register", authHandler.Register())
 	r.Get("/home", SessionMiddleware(handlers.Home(), sessionManager))
-	r.Post("/login", handlers.Login(db, sessionManager))
-	r.Post("/logout", handlers.Logout(sessionManager))
-	r.Get("/todos", SessionMiddleware(handlers.GetTodos(todoService), sessionManager))
-	r.Post("/todos", SessionMiddleware(handlers.CreateTodo(todoService), sessionManager))
-	r.Put("/todos/{id}", SessionMiddleware(handlers.UpdateTodo(todoService), sessionManager))
-	r.Delete("/todos/{id}", SessionMiddleware(handlers.DeleteTodo(todoService), sessionManager))
+	r.Post("/login", authHandler.Login())
+	r.Post("/logout", authHandler.Logout())
+	r.Get("/todos", SessionMiddleware(todoHandler.GetTodos(), sessionManager))
+	r.Post("/todos", SessionMiddleware(todoHandler.CreateTodo(), sessionManager))
+	r.Put("/todos/{id}", SessionMiddleware(todoHandler.UpdateTodo(), sessionManager))
+	r.Delete("/todos/{id}", SessionMiddleware(todoHandler.DeleteTodo(), sessionManager))
 
 	// Start the server
 	log.Println("Server is running on http://localhost:8080")
