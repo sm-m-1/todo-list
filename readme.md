@@ -47,3 +47,7 @@ test users:
 
 
 run tests with `go test ./test/e2e -v`
+
+The app can be run with a docker containers, one for postgres and one for the go server.
+
+`docker-compose up --build` to start docker containers

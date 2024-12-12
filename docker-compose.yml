@@ -1,0 +1,37 @@
+version: '3.8'
+
+networks:
+  default:
+    external: true
+    name: my_persistent_network
+
+services:
+  db:
+    image: postgres:14
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=yourpassword
+      - POSTGRES_DB=todo_list
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+
+  app:
+    build: .
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    # environment:
+      # - DATABASE_URL=postgres://postgres:yourpassword@db:5432/todo_list
+      # - DB_HOST=db
+      # - DB_PORT=5432
+      # - DB_USER=postgres
+      # - DB_PASSWORD=mypassword
+      # - DB_NAME=todo_list
+
+
+volumes:
+  postgres_data:
