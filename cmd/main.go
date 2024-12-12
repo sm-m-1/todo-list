@@ -55,6 +55,6 @@ func main() {
 
 	// Start the server
 	log.Println("Server is running on http://localhost:8080")
-	log.Fatal(http.ListenAndServer(":8080", sessionManager.LoadAndSave(r)))
+	log.Fatal(http.ListenAndServe(":8080", sessionManager.LoadAndSave(r)))
 	// log.Fatal(http.ListenAndServe(":8080", r))
 }
