@@ -58,4 +58,4 @@ jobs:
       #   DB_PASSWORD: postgres
       #   DB_NAME: todo_list
       run: |
-        go test ./...
+        go test ./... -v
